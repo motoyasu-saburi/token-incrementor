@@ -6,16 +6,15 @@ An example use case would be if  you are active scanning a "create user" form, w
 ## Example
 It will match:
 ```
-{"name":"IncrementItPlease"}
+{"name":"hogehogeIncrementItPlease:123"}
 ```
 And replace it with:
 ```
-{"name":"Incremented291706"}
+{"name":"hogehoge123"}
+{"name":"hogehoge124"}
 ...
-{"name":"Incremented291707"}
-...
-{"name":"Incremented291708"}
+{"name":"hogehoge9999"}
 ```
 
 ## Releases
-See the [Releases](https://github.com/motoyasu.saburi/IncrementMePlease/releases) tab for a pre-built jar.
+See the [Releases](https://github.com/motoyasu-saburi/token-incrementor) tab for a pre-built jar.

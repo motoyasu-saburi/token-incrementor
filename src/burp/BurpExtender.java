@@ -1,7 +1,6 @@
 package burp;
 
 import java.io.PrintWriter;
-import java.util.Random;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +55,7 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
             Integer incrementInitialNum = getIncrementedInitialNumber(reqBody);
             if (incrementInitialNum  != null) {
                 counter = incrementInitialNum;
-                String replaceTargetString = "IncrementItPlease:" + incrementInitialNum
+                String replaceTargetString = "IncrementItPlease:" + incrementInitialNum;
 
                 int offset = reqBody.indexOf(replaceTargetString);
                 stdout.println(offset);
