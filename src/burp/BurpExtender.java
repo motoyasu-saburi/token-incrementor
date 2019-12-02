@@ -3,6 +3,8 @@ package burp;
 import java.io.PrintWriter;
 import java.util.Random;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
@@ -12,11 +14,6 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
     private PrintWriter stderr;
 
     private int counter = 0;
-    private String nextToken = "";
-    private String nextTimestamp = "";
-    private Random rand = new Random();
-    int randomint = rand.nextInt(999);
-
 
     //
     // implement IBurpExtender
@@ -30,7 +27,7 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
         stderr = new PrintWriter(callbacks.getStderr(),true);
 
         // set our extension name
-        callbacks.setExtensionName("IncrementMePlease");
+        callbacks.setExtensionName("IncrementItPlease");
 
         // register ourselves as an HTTP listener
         callbacks.registerHttpListener(this);
@@ -56,11 +53,14 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
             // get the request body
             String reqBody = request.substring(iRequest.getBodyOffset());
 
-            if (reqBody.contains("IncrementMePlease")) {
+            Integer incrementInitialNum = getIncrementedInitialNumber(reqBody);
+            if (incrementInitialNum  != null) {
+                counter = incrementInitialNum;
+                String replaceTargetString = "IncrementItPlease:" + incrementInitialNum
 
-                int offset = reqBody.indexOf("IncrementMePlease");
+                int offset = reqBody.indexOf(replaceTargetString);
                 stdout.println(offset);
-                reqBody = reqBody.replaceAll("IncrementMePlease", "Incremented" + String.valueOf(randomint) + String.valueOf(counter));
+                reqBody = reqBody.replaceAll(replaceTargetString, String.valueOf(counter));
                 counter++;
                 updated = true;
             }
@@ -78,5 +78,18 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
                 stdout.println("-----end output-------");
             }
         }
+    }
+    private Integer getIncrementedInitialNumber(String requestBody) {
+        Pattern p = Pattern.compile("(?!IncrementItPlease:)[0-9]+");
+        Matcher m = p.matcher(requestBody);
+        if(m.find()) {
+            String matchStr = m.group(0);
+            try {
+                return Integer.parseInt(matchStr);
+            } catch (NumberFormatException e) {
+                stderr.println("Error: " + e);
+            }
+        }
+        return null;
     }
 }
