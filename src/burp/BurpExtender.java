@@ -2,6 +2,7 @@ package burp;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,7 +13,8 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
     private PrintWriter stdout;
     private PrintWriter stderr;
 
-    private int counter = 0;
+    private Integer counter = null;
+    private Integer incrementInitialNum = null;
 
     //
     // implement IBurpExtender
@@ -30,6 +32,9 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
 
         // register ourselves as an HTTP listener
         callbacks.registerHttpListener(this);
+
+        // Register Success
+        stdout.println("Register: IncrementItPlease");
     }
 
     //
@@ -51,14 +56,12 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
             List<String> headers = iRequest.getHeaders();
             // get the request body
             String reqBody = request.substring(iRequest.getBodyOffset());
-
-            Integer incrementInitialNum = getIncrementedInitialNumber(reqBody);
-            if (incrementInitialNum  != null) {
+            if(counter == null) {
+                incrementInitialNum = getIncrementedInitialNumber(reqBody);
                 counter = incrementInitialNum;
+            }
+            if (counter != null) {
                 String replaceTargetString = "IncrementItPlease:" + incrementInitialNum;
-
-                int offset = reqBody.indexOf(replaceTargetString);
-                stdout.println(offset);
                 reqBody = reqBody.replaceAll(replaceTargetString, String.valueOf(counter));
                 counter++;
                 updated = true;
@@ -68,10 +71,8 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
                 stdout.println("-----Request Before Plugin Update-------");
                 stdout.println(helpers.bytesToString(messageInfo.getRequest()));
                 stdout.println("-----end output-------");
-
                 byte[] message = helpers.buildHttpMessage(headers, reqBody.getBytes());
                 messageInfo.setRequest(message);
-
                 stdout.println("-----Request After Plugin Update-------");
                 stdout.println(helpers.bytesToString(messageInfo.getRequest()));
                 stdout.println("-----end output-------");
@@ -79,10 +80,10 @@ public class BurpExtender implements burp.IBurpExtender, burp.IHttpListener
         }
     }
     private Integer getIncrementedInitialNumber(String requestBody) {
-        Pattern p = Pattern.compile("(?!IncrementItPlease:)[0-9]+");
+        Pattern p = Pattern.compile("(?<=IncrementItPlease:)[0-9]+");
         Matcher m = p.matcher(requestBody);
         if(m.find()) {
-            String matchStr = m.group(0);
+            String matchStr = m.group();
             try {
                 return Integer.parseInt(matchStr);
             } catch (NumberFormatException e) {

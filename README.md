@@ -18,3 +18,13 @@ And replace it with:
 
 ## Releases
 See the [Releases](https://github.com/motoyasu-saburi/token-incrementor) tab for a pre-built jar.
+
+## Build and Register
+```
+$ ./gradlew wrapper
+$ ./gradlew tasks
+$ ./gradlew shadowJar
+
+Register ./build/libs/token-incrementor-all.jar to Burp Extender
+```
+
